@@ -54,7 +54,6 @@
       width: 100%;
     }
 
-    /* スライダー本体のスタイル */
     input[type=range] {
       -webkit-appearance: none;
       width: 100%;
@@ -65,7 +64,6 @@
       cursor: pointer;
     }
 
-    /* ツマミ（Thumb）のスタイル */
     input[type=range]::-webkit-slider-thumb {
       -webkit-appearance: none;
       appearance: none;
@@ -105,7 +103,6 @@
       background-color: #fff;
     }
 
-    /* SVG Arrows Layer */
     .svg-layer {
       position: absolute;
       top: 0;
@@ -195,16 +192,13 @@
       margin-bottom: 2px;
     }
 
-    /* Specific Card Positions */
-    .card-s1 { top: 135px; left: 22px; }
+    .card-s1 { top: 135px; left: 25px; }
     .card-s2 { top: 110px; left: 190px; }
     .card-sy { top: 260px; left: 40px; }
     .card-s3 { top: 255px; left: 240px; }
     .card-s7 { top: 115px; left: 420px; }
     .card-s4 { top: 280px; left: 440px; }
-    /* 塔頂（右上）：S6 ethanol product */
     .card-s6 { top: 125px; left: 665px; }
-    /* 塔底（右下）：S5 bottoms */
     .card-s5 { top: 300px; left: 675px; }
 
     .card .total {
@@ -267,7 +261,6 @@
 
     <!-- Process Diagram -->
     <div class="diagram-area">
-      <!-- Arrows (SVG Layer) -->
       <svg class="svg-layer">
         <defs>
           <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
@@ -275,26 +268,13 @@
           </marker>
         </defs>
 
-        <!-- S1 & SY Input Arrows into Mixer -->
         <line x1="50" y1="205" x2="140" y2="205" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrow)" />
         <line x1="50" y1="240" x2="140" y2="240" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrow)" />
-
-        <!-- S2 Vertical Water Feed to Mixer -->
         <line x1="185" y1="100" x2="185" y2="190" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrow)" />
-
-        <!-- Mixer to Reactor (S3) -->
         <line x1="240" y1="225" x2="360" y2="225" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrow)" />
-
-        <!-- S7 Vent Arrow Up from Reactor -->
         <line x1="420" y1="172" x2="420" y2="105" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrow)" />
-
-        <!-- Reactor to Distillation (S4) -->
         <line x1="480" y1="225" x2="590" y2="225" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrow)" />
-
-        <!-- Distillation Top Output (塔頂：S6 Ethanol Product) -->
         <polyline points="625,160 625,110 720,110" fill="none" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrow)" />
-
-        <!-- Distillation Bottom Output (塔底：S5 Bottoms) -->
         <line x1="625" y1="300" x2="625" y2="385" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrow)" />
       </svg>
 
@@ -350,7 +330,7 @@
         <div class="total">total: <span id="s4-total">5811</span></div>
       </div>
 
-      <!-- S6: Ethanol Product (塔頂：右上) -->
+      <!-- S6: Ethanol Product -->
       <div class="card card-s6">
         <div class="card-title">S6: ethanol product (kg/h)</div>
         <div>water: <span id="s6-water">23.3</span></div>
@@ -358,7 +338,7 @@
         <div class="total">total: <span id="s6-total">530</span></div>
       </div>
 
-      <!-- S5: Bottoms (塔底：右下) -->
+      <!-- S5: Bottoms -->
       <div class="card card-s5">
         <div class="card-title">S5: bottoms (kg/h)</div>
         <div>sucrose: <span id="s5-sucrose">50</span></div>
@@ -369,51 +349,60 @@
       </div>
     </div>
 
-
+    <!-- Buttons -->
+    <div class="buttons-group">
+      <button class="btn">Directions</button>
+      <button class="btn">Details</button>
+      <button class="btn">Guided inquiry</button>
+      <button class="btn">About</button>
+    </div>
   </div>
 
   <script>
-    // 定数値（反応・分離比率パラメータ）
-    const YEAST_FEED = 300;           // kg/h
-    const CONVERSION_RATE = 0.95;     // ショ糖の反応率 95%
-    const MW_SUCROSE = 342.3;
-    const MW_ETHANOL = 46.07;
+    // 定数・パラメータ定義
+    const YEAST_FEED = 300;           // m_Y (kg/h)
+    const CONVERSION_RATE = 0.95;     // X (反応率 95%)
+    const ETHANOL_RECOVERY = 0.99;    // R (回収率 99%)
+    const X_E = 0.956;                // x_E (質量分率 95.6 wt%)
+
+    // 分子量 (g/mol)
+    const MW_SUCROSE = 342.3;         // M_S
+    const MW_ETHANOL = 46.07;         // M_E
     const MW_CO2 = 44.01;
     const MW_WATER = 18.02;
-
-    // 蒸留塔の分離比率（S4に対する回収率）
-    const ETHANOL_RECOVERY = 0.99; // エタノールの99%が塔頂へ
-    const WATER_RATIO = 0.044;     // 塔頂における水/エタノール比
 
     const inputSucrose = document.getElementById('input-sucrose');
     const inputWater = document.getElementById('input-water');
 
     function calculateProcess() {
+      // m_1S, m_2W
       const sucroseFeed = parseFloat(inputSucrose.value);
       const waterFeed = parseFloat(inputWater.value);
 
-      // スライダー表示更新
+      // UI表示更新
       document.getElementById('lbl-sucrose').textContent = `${sucroseFeed} kg/h`;
       document.getElementById('lbl-water').textContent = `${waterFeed} kg/h`;
 
-      // S1 & S2 & SY
+      // S1, S2
       document.getElementById('s1-sucrose').textContent = sucroseFeed.toFixed(0);
       document.getElementById('s2-water').textContent = waterFeed.toFixed(0);
 
-      // S3: Reactor Feed
+      // S3: Reactor Feed (m_3S, m_3W, m_3Y)
       const s3Total = sucroseFeed + waterFeed + YEAST_FEED;
       document.getElementById('s3-sucrose').textContent = sucroseFeed.toFixed(0);
       document.getElementById('s3-water').textContent = waterFeed.toFixed(0);
       document.getElementById('s3-total').textContent = s3Total.toFixed(0);
 
-      // リアクター計算 (発酵反応: Sucrose + H2O -> 4 Ethanol + 4 CO2)
+      // 反応計算
+      // 反応進行度速度: ξ_dot = X * (m_1S / M_S)
+      const xiDot = CONVERSION_RATE * (sucroseFeed / MW_SUCROSE);
+
       const sucroseReacted = sucroseFeed * CONVERSION_RATE;
       const sucroseUnreacted = sucroseFeed - sucroseReacted;
 
-      const kmolSucroseReacted = sucroseReacted / MW_SUCROSE;
-      const waterConsumed = kmolSucroseReacted * MW_WATER;
-      const ethanolProduced = kmolSucroseReacted * 4 * MW_ETHANOL;
-      const co2Produced = kmolSucroseReacted * 4 * MW_CO2;
+      const waterConsumed = xiDot * MW_WATER;
+      const ethanolProduced = 4 * xiDot * MW_ETHANOL; // m_4E
+      const co2Produced = 4 * xiDot * MW_CO2;
 
       // S7: CO2 Vent
       document.getElementById('s7-co2').textContent = co2Produced.toFixed(0);
@@ -427,19 +416,23 @@
       document.getElementById('s4-ethanol').textContent = ethanolProduced.toFixed(0);
       document.getElementById('s4-total').textContent = s4Total.toFixed(0);
 
-      // S6: Ethanol Product (塔頂：右上)
-      const s6Ethanol = ethanolProduced * ETHANOL_RECOVERY;
-      const s6Water = s6Ethanol * WATER_RATIO;
+      // S6: Distillate (ご指定の式による直計算)
+      // m_6E = 4 * R * X * (M_E / M_S) * m_1S
+      const s6Ethanol = 4 * ETHANOL_RECOVERY * CONVERSION_RATE * (MW_ETHANOL / MW_SUCROSE) * sucroseFeed;
+
+      // m_6W = 4 * ((1 - x_E) / x_E) * R * X * (M_E / M_S) * m_1S
+      const s6Water = 4 * ((1 - X_E) / X_E) * ETHANOL_RECOVERY * CONVERSION_RATE * (MW_ETHANOL / MW_SUCROSE) * sucroseFeed;
+
       const s6Total = s6Ethanol + s6Water;
 
       document.getElementById('s6-ethanol').textContent = s6Ethanol.toFixed(0);
       document.getElementById('s6-water').textContent = s6Water.toFixed(1);
       document.getElementById('s6-total').textContent = s6Total.toFixed(0);
 
-      // S5: Bottoms (塔底：右下)
-      const s5Sucrose = sucroseUnreacted;
-      const s5Water = s4Water - s6Water;
-      const s5Ethanol = ethanolProduced - s6Ethanol;
+      // S5: Bottoms (物質収支: m_5 = m_4 - m_6)
+      const s5Sucrose = sucroseUnreacted;             // m_5S = m_4S
+      const s5Water = s4Water - s6Water;               // m_5W = m_4W - m_6W
+      const s5Ethanol = ethanolProduced - s6Ethanol;   // m_5E = m_4E - m_6E
       const s5Yeast = YEAST_FEED;
       const s5Total = s5Sucrose + s5Water + s5Ethanol + s5Yeast;
 
@@ -449,11 +442,9 @@
       document.getElementById('s5-total').textContent = s5Total.toFixed(0);
     }
 
-    // イベントリスナーの追加（スライダー操作時に再計算）
     inputSucrose.addEventListener('input', calculateProcess);
     inputWater.addEventListener('input', calculateProcess);
 
-    // 初期計算の実行
     calculateProcess();
   </script>
 </body>

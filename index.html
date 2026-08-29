@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chemical Process Flow Diagram</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body {
+      background-color: #ffffff;
+      color: #333;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .container {
+      width: 900px;
+      position: relative;
+    }
+
+    /* --- Controls Section --- */
+    .controls {
+      display: flex;
+      justify-content: space-around;
+      margin-bottom: 20px;
+    }
+
+    .slider-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 320px;
+    }
+
+    .slider-label {
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+
+    .slider-label strong {
+      font-size: 15px;
+    }
+
+    .slider-wrapper {
+      position: relative;
+      width: 100%;
+    }
+
+    /* スライダー本体のスタイル */
+    input[type=range] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 8px;
+      border-radius: 4px;
+      background: #ddd;
+      outline: none;
+      cursor: pointer;
+    }
+
+    /* ツマミ（Thumb）のスタイル */
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #777;
+      border: 2px solid #fff;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+      cursor: pointer;
+    }
+
+    input[type=range]::-moz-range-thumb {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #777;
+      border: 2px solid #fff;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+      cursor: pointer;
+    }
+
+    .slider-ticks {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      font-size: 12px;
+      color: #777;
+      margin-top: 4px;
+    }
+
+    /* --- Diagram Canvas Area --- */
+    .diagram-area {
+      position: relative;
+      width: 900px;
+      height: 480px;
+      background-color: #fff;
+    }
+
+    /* SVG Arrows Layer */
+    .svg-layer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+    }
+
+    /* --- Nodes / Process Units --- */
+    .unit {
+      position: absolute;
+      border: 1.5px solid #333;
+      background-color: #f2f2f2;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: bold;
+      color: #222;
+    }
+
+    .mixer {
+      top: 190px;
+      left: 140px;
+      width: 100px;
+      height: 70px;
+      border-radius: 8px;
+    }
+
+    .mixer-header {
+      width: 100%;
+      height: 20px;
+      background-color: #bbb;
+      border-bottom: 1px solid #333;
+      border-top-left-radius: 6px;
+      border-top-right-radius: 6px;
+    }
+
+    .reactor {
+      top: 172px;
+      left: 360px;
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+    }
+
+    .distillation {
+      top: 160px;
+      left: 590px;
+      width: 70px;
+      height: 140px;
+      border-radius: 8px;
+    }
+
+    .distillation-header {
+      width: 100%;
+      height: 22px;
+      background-color: #bbb;
+      border-bottom: 1px solid #333;
+      border-top-left-radius: 6px;
+      border-top-right-radius: 6px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* --- Data Cards --- */
+    .card {
+      position: absolute;
+      background: #ffffff;
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-size: 12px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+      z-index: 3;
+      line-height: 1.3;
+    }
+
+    .card-title {
+      font-weight: bold;
+      font-size: 12.5px;
+      margin-bottom: 2px;
+    }
+
+    /* Specific Card Positions */
+    .card-s1 { top: 135px; left: 22px; }
+    .card-s2 { top: 110px; left: 190px; }
+    .card-sy { top: 260px; left: 40px; }
+    .card-s3 { top: 255px; left: 240px; }
+    .card-s7 { top: 115px; left: 420px; }
+    .card-s4 { top: 280px; left: 440px; }
+    /* 塔頂（右上）：S6 ethanol product */
+    .card-s6 { top: 125px; left: 665px; }
+    /* 塔底（右下）：S5 bottoms */
+    .card-s5 { top: 300px; left: 675px; }
+
+    .card .total {
+      font-weight: bold;
+      margin-top: 2px;
+    }
+
+    /* --- Bottom Buttons --- */
+    .buttons-group {
+      margin-top: 10px;
+      display: flex;
+      gap: 12px;
+      padding-left: 45px;
+    }
+
+    .btn {
+      background-color: #9e0b0f;
+      color: white;
+      border: none;
+      padding: 8px 18px;
+      border-radius: 4px;
+      font-size: 13px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .btn:hover {
+      background-color: #7a080c;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- Sliders -->
+    <div class="controls">
+      <div class="slider-group">
+        <div class="slider-label">sucrose feed rate <strong id="lbl-sucrose">1000 kg/h</strong></div>
+        <div class="slider-wrapper">
+          <input type="range" id="input-sucrose" min="500" max="6000" value="1000" step="50">
+        </div>
+        <div class="slider-ticks">
+          <span>500</span>
+          <span>6000</span>
+        </div>
+      </div>
+
+      <div class="slider-group">
+        <div class="slider-label">water feed rate <strong id="lbl-water">5000 kg/h</strong></div>
+        <div class="slider-wrapper">
+          <input type="range" id="input-water" min="200" max="12000" value="5000" step="50">
+        </div>
+        <div class="slider-ticks">
+          <span>200</span>
+          <span>12000</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Process Diagram -->
+    <div class="diagram-area">
+      <!-- Arrows (SVG Layer) -->
+      <svg class="svg-layer">
+        <defs>
+          <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 1 L 10 5 L 0 9 z" fill="#7f8c8d" />
+          </marker>
+        </defs>
+
+        <!-- S1 & SY Input Arrows into Mixer -->
+        <line x1="50" y1="205" x2="140" y2="205" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrow)" />
+        <line x1="50" y1="240" x2="140" y2="240" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrow)" />
+
+        <!-- S2 Vertical Water Feed to Mixer -->
+        <line x1="185" y1="100" x2="185" y2="190" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrow)" />
+
+        <!-- Mixer to Reactor (S3) -->
+        <line x1="240" y1="225" x2="360" y2="225" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrow)" />
+
+        <!-- S7 Vent Arrow Up from Reactor -->
+        <line x1="420" y1="172" x2="420" y2="105" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrow)" />
+
+        <!-- Reactor to Distillation (S4) -->
+        <line x1="480" y1="225" x2="590" y2="225" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrow)" />
+
+        <!-- Distillation Top Output (塔頂：S6 Ethanol Product) -->
+        <polyline points="625,160 625,110 720,110" fill="none" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrow)" />
+
+        <!-- Distillation Bottom Output (塔底：S5 Bottoms) -->
+        <line x1="625" y1="300" x2="625" y2="385" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrow)" />
+      </svg>
+
+      <!-- Process Units -->
+      <div class="unit mixer">
+        <div class="mixer-header"></div>
+        <div style="margin: auto;">Mixer</div>
+      </div>
+
+      <div class="unit reactor">
+        Reactor
+      </div>
+
+      <div class="unit distillation">
+        <div class="distillation-header">Distillation</div>
+      </div>
+
+      <!-- Data Cards -->
+      <div class="card card-s1">
+        <div class="card-title">S1: sucrose feed (kg/h)</div>
+        <div>sucrose: <span id="s1-sucrose">1000</span></div>
+      </div>
+
+      <div class="card card-s2">
+        <div class="card-title">S2: water feed (kg/h)</div>
+        <div>water: <span id="s2-water">5000</span></div>
+      </div>
+
+      <div class="card card-sy">
+        <div class="card-title">SY: yeast feed (kg/h)</div>
+        <div>yeast: <span id="sy-yeast">300</span></div>
+      </div>
+
+      <div class="card card-s3">
+        <div class="card-title">S3: reactor feed (kg/h)</div>
+        <div>sucrose: <span id="s3-sucrose">1000</span></div>
+        <div>water: <span id="s3-water">5000</span></div>
+        <div>yeast: <span id="s3-yeast">300</span></div>
+        <div class="total">total: <span id="s3-total">6300</span></div>
+      </div>
+
+      <div class="card card-s7">
+        <div class="card-title">S7: CO₂ vent (kg/h)</div>
+        <div>CO₂: <span id="s7-co2">489</span></div>
+      </div>
+
+      <div class="card card-s4">
+        <div class="card-title">S4: column feed (kg/h)</div>
+        <div>sucrose: <span id="s4-sucrose">50</span></div>
+        <div>water: <span id="s4-water">4950</span></div>
+        <div>ethanol: <span id="s4-ethanol">511</span></div>
+        <div>yeast: <span id="s4-yeast">300</span></div>
+        <div class="total">total: <span id="s4-total">5811</span></div>
+      </div>
+
+      <!-- S6: Ethanol Product (塔頂：右上) -->
+      <div class="card card-s6">
+        <div class="card-title">S6: ethanol product (kg/h)</div>
+        <div>water: <span id="s6-water">23.3</span></div>
+        <div>ethanol: <span id="s6-ethanol">506</span></div>
+        <div class="total">total: <span id="s6-total">530</span></div>
+      </div>
+
+      <!-- S5: Bottoms (塔底：右下) -->
+      <div class="card card-s5">
+        <div class="card-title">S5: bottoms (kg/h)</div>
+        <div>sucrose: <span id="s5-sucrose">50</span></div>
+        <div>water: <span id="s5-water">4927</span></div>
+        <div>ethanol: <span id="s5-ethanol">5.1</span></div>
+        <div>yeast: <span id="s5-yeast">300</span></div>
+        <div class="total">total: <span id="s5-total">5282</span></div>
+      </div>
+    </div>
+
+
+  </div>
+
+  <script>
+    // 定数値（反応・分離比率パラメータ）
+    const YEAST_FEED = 300;           // kg/h
+    const CONVERSION_RATE = 0.95;     // ショ糖の反応率 95%
+    const MW_SUCROSE = 342.3;
+    const MW_ETHANOL = 46.07;
+    const MW_CO2 = 44.01;
+    const MW_WATER = 18.02;
+
+    // 蒸留塔の分離比率（S4に対する回収率）
+    const ETHANOL_RECOVERY = 0.99; // エタノールの99%が塔頂へ
+    const WATER_RATIO = 0.044;     // 塔頂における水/エタノール比
+
+    const inputSucrose = document.getElementById('input-sucrose');
+    const inputWater = document.getElementById('input-water');
+
+    function calculateProcess() {
+      const sucroseFeed = parseFloat(inputSucrose.value);
+      const waterFeed = parseFloat(inputWater.value);
+
+      // スライダー表示更新
+      document.getElementById('lbl-sucrose').textContent = `${sucroseFeed} kg/h`;
+      document.getElementById('lbl-water').textContent = `${waterFeed} kg/h`;
+
+      // S1 & S2 & SY
+      document.getElementById('s1-sucrose').textContent = sucroseFeed.toFixed(0);
+      document.getElementById('s2-water').textContent = waterFeed.toFixed(0);
+
+      // S3: Reactor Feed
+      const s3Total = sucroseFeed + waterFeed + YEAST_FEED;
+      document.getElementById('s3-sucrose').textContent = sucroseFeed.toFixed(0);
+      document.getElementById('s3-water').textContent = waterFeed.toFixed(0);
+      document.getElementById('s3-total').textContent = s3Total.toFixed(0);
+
+      // リアクター計算 (発酵反応: Sucrose + H2O -> 4 Ethanol + 4 CO2)
+      const sucroseReacted = sucroseFeed * CONVERSION_RATE;
+      const sucroseUnreacted = sucroseFeed - sucroseReacted;
+
+      const kmolSucroseReacted = sucroseReacted / MW_SUCROSE;
+      const waterConsumed = kmolSucroseReacted * MW_WATER;
+      const ethanolProduced = kmolSucroseReacted * 4 * MW_ETHANOL;
+      const co2Produced = kmolSucroseReacted * 4 * MW_CO2;
+
+      // S7: CO2 Vent
+      document.getElementById('s7-co2').textContent = co2Produced.toFixed(0);
+
+      // S4: Column Feed
+      const s4Water = waterFeed - waterConsumed;
+      const s4Total = sucroseUnreacted + s4Water + ethanolProduced + YEAST_FEED;
+
+      document.getElementById('s4-sucrose').textContent = sucroseUnreacted.toFixed(0);
+      document.getElementById('s4-water').textContent = s4Water.toFixed(0);
+      document.getElementById('s4-ethanol').textContent = ethanolProduced.toFixed(0);
+      document.getElementById('s4-total').textContent = s4Total.toFixed(0);
+
+      // S6: Ethanol Product (塔頂：右上)
+      const s6Ethanol = ethanolProduced * ETHANOL_RECOVERY;
+      const s6Water = s6Ethanol * WATER_RATIO;
+      const s6Total = s6Ethanol + s6Water;
+
+      document.getElementById('s6-ethanol').textContent = s6Ethanol.toFixed(0);
+      document.getElementById('s6-water').textContent = s6Water.toFixed(1);
+      document.getElementById('s6-total').textContent = s6Total.toFixed(0);
+
+      // S5: Bottoms (塔底：右下)
+      const s5Sucrose = sucroseUnreacted;
+      const s5Water = s4Water - s6Water;
+      const s5Ethanol = ethanolProduced - s6Ethanol;
+      const s5Yeast = YEAST_FEED;
+      const s5Total = s5Sucrose + s5Water + s5Ethanol + s5Yeast;
+
+      document.getElementById('s5-sucrose').textContent = s5Sucrose.toFixed(0);
+      document.getElementById('s5-water').textContent = s5Water.toFixed(0);
+      document.getElementById('s5-ethanol').textContent = s5Ethanol.toFixed(1);
+      document.getElementById('s5-total').textContent = s5Total.toFixed(0);
+    }
+
+    // イベントリスナーの追加（スライダー操作時に再計算）
+    inputSucrose.addEventListener('input', calculateProcess);
+    inputWater.addEventListener('input', calculateProcess);
+
+    // 初期計算の実行
+    calculateProcess();
+  </script>
+</body>
+</html>

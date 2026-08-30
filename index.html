@@ -29,70 +29,59 @@
     /* --- Controls Section --- */
     .controls {
       display: flex;
-      justify-content: space-around;
-      margin-bottom: 20px;
-    }
-
-    .slider-group {
-      display: flex;
       flex-direction: column;
-      align-items: center;
-      width: 320px;
+      gap: 15px;
+      margin-bottom: 25px;
+      background: #f9f9f9;
+      padding: 15px 20px;
+      border-radius: 8px;
+      border: 1px solid #e0e0e0;
     }
 
-    .slider-label {
-      font-size: 14px;
-      margin-bottom: 8px;
-    }
-
-    .slider-label strong {
-      font-size: 15px;
-    }
-
-    .slider-wrapper {
-      position: relative;
-      width: 100%;
-    }
-
-    input[type=range] {
-      -webkit-appearance: none;
-      width: 100%;
-      height: 8px;
-      border-radius: 4px;
-      background: #ddd;
-      outline: none;
-      cursor: pointer;
-    }
-
-    input[type=range]::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      appearance: none;
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      background: #777;
-      border: 2px solid #fff;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.4);
-      cursor: pointer;
-    }
-
-    input[type=range]::-moz-range-thumb {
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      background: #777;
-      border: 2px solid #fff;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.4);
-      cursor: pointer;
-    }
-
-    .slider-ticks {
+    .controls-row {
       display: flex;
-      justify-content: space-between;
-      width: 100%;
-      font-size: 12px;
-      color: #777;
-      margin-top: 4px;
+      justify-content: space-around;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .input-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .input-group label {
+      font-size: 13.5px;
+      font-weight: bold;
+      color: #333;
+    }
+
+    .input-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    input[type=number] {
+      width: 90px;
+      padding: 5px 8px;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      text-align: right;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input[type=number]:focus {
+      border-color: #0056b3;
+      box-shadow: 0 0 3px rgba(0, 86, 179, 0.3);
+    }
+
+    .unit-text {
+      font-size: 13px;
+      color: #666;
     }
 
     /* --- Diagram Canvas Area --- */
@@ -205,56 +194,56 @@
       font-weight: bold;
       margin-top: 2px;
     }
-
-    /* --- Bottom Buttons --- */
-    .buttons-group {
-      margin-top: 10px;
-      display: flex;
-      gap: 12px;
-      padding-left: 45px;
-    }
-
-    .btn {
-      background-color: #9e0b0f;
-      color: white;
-      border: none;
-      padding: 8px 18px;
-      border-radius: 4px;
-      font-size: 13px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: background-color 0.2s;
-    }
-
-    .btn:hover {
-      background-color: #7a080c;
-    }
   </style>
 </head>
 <body>
 
   <div class="container">
-    <!-- Sliders -->
+    <!-- Controls Section -->
     <div class="controls">
-      <div class="slider-group">
-        <div class="slider-label">sucrose feed rate <strong id="lbl-sucrose">1000 kg/h</strong></div>
-        <div class="slider-wrapper">
-          <input type="range" id="input-sucrose" min="500" max="6000" value="1000" step="50">
+      <!-- Row 1: Flow Rates -->
+      <div class="controls-row">
+        <div class="input-group">
+          <label for="input-sucrose">sucrose feed rate:</label>
+          <div class="input-wrapper">
+            <input type="number" id="input-sucrose" min="0" value="1000" step="50">
+            <span class="unit-text">kg/h</span>
+          </div>
         </div>
-        <div class="slider-ticks">
-          <span>500</span>
-          <span>6000</span>
+
+        <div class="input-group">
+          <label for="input-water">water feed rate:</label>
+          <div class="input-wrapper">
+            <input type="number" id="input-water" min="0" value="5000" step="50">
+            <span class="unit-text">kg/h</span>
+          </div>
         </div>
       </div>
 
-      <div class="slider-group">
-        <div class="slider-label">water feed rate <strong id="lbl-water">5000 kg/h</strong></div>
-        <div class="slider-wrapper">
-          <input type="range" id="input-water" min="200" max="12000" value="5000" step="50">
+      <!-- Row 2: Process Parameters -->
+      <div class="controls-row">
+        <div class="input-group">
+          <label for="input-conversion">Conversion Rate (X):</label>
+          <div class="input-wrapper">
+            <input type="number" id="input-conversion" min="0" max="100" value="95" step="0.1">
+            <span class="unit-text">%</span>
+          </div>
         </div>
-        <div class="slider-ticks">
-          <span>200</span>
-          <span>12000</span>
+
+        <div class="input-group">
+          <label for="input-recovery">Ethanol Recovery (R):</label>
+          <div class="input-wrapper">
+            <input type="number" id="input-recovery" min="0" max="100" value="99" step="0.1">
+            <span class="unit-text">%</span>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label for="input-fraction">Ethanol Mass Fraction (x_E):</label>
+          <div class="input-wrapper">
+            <input type="number" id="input-fraction" min="0" max="100" value="95.6" step="0.1">
+            <span class="unit-text">wt%</span>
+          </div>
         </div>
       </div>
     </div>
@@ -348,40 +337,32 @@
         <div class="total">total: <span id="s5-total">5282</span></div>
       </div>
     </div>
-
-    <!-- Buttons -->
-    <div class="buttons-group">
-      <button class="btn">Directions</button>
-      <button class="btn">Details</button>
-      <button class="btn">Guided inquiry</button>
-      <button class="btn">About</button>
-    </div>
   </div>
 
   <script>
-    // 定数・パラメータ定義
+    // 定数・分子量 (g/mol)
     const YEAST_FEED = 300;           // m_Y (kg/h)
-    const CONVERSION_RATE = 0.95;     // X (反応率 95%)
-    const ETHANOL_RECOVERY = 0.99;    // R (回収率 99%)
-    const X_E = 0.956;                // x_E (質量分率 95.6 wt%)
-
-    // 分子量 (g/mol)
     const MW_SUCROSE = 342.3;         // M_S
     const MW_ETHANOL = 46.07;         // M_E
     const MW_CO2 = 44.01;
     const MW_WATER = 18.02;
 
+    // DOM Elements
     const inputSucrose = document.getElementById('input-sucrose');
     const inputWater = document.getElementById('input-water');
+    const inputConversion = document.getElementById('input-conversion');
+    const inputRecovery = document.getElementById('input-recovery');
+    const inputFraction = document.getElementById('input-fraction');
 
     function calculateProcess() {
-      // m_1S, m_2W
-      const sucroseFeed = parseFloat(inputSucrose.value);
-      const waterFeed = parseFloat(inputWater.value);
-
-      // UI表示更新
-      document.getElementById('lbl-sucrose').textContent = `${sucroseFeed} kg/h`;
-      document.getElementById('lbl-water').textContent = `${waterFeed} kg/h`;
+      // 入力値の取得（空文字や不正な入力のフォールバック処理付き）
+      const sucroseFeed = parseFloat(inputSucrose.value) || 0;
+      const waterFeed = parseFloat(inputWater.value) || 0;
+      
+      // パーセンテージを小数値（0〜1）に変換
+      const conversionRate = (parseFloat(inputConversion.value) || 0) / 100; // X
+      const ethanolRecovery = (parseFloat(inputRecovery.value) || 0) / 100; // R
+      const xE = (parseFloat(inputFraction.value) || 0) / 100;              // x_E
 
       // S1, S2
       document.getElementById('s1-sucrose').textContent = sucroseFeed.toFixed(0);
@@ -395,9 +376,9 @@
 
       // 反応計算
       // 反応進行度速度: ξ_dot = X * (m_1S / M_S)
-      const xiDot = CONVERSION_RATE * (sucroseFeed / MW_SUCROSE);
+      const xiDot = conversionRate * (sucroseFeed / MW_SUCROSE);
 
-      const sucroseReacted = sucroseFeed * CONVERSION_RATE;
+      const sucroseReacted = sucroseFeed * conversionRate;
       const sucroseUnreacted = sucroseFeed - sucroseReacted;
 
       const waterConsumed = xiDot * MW_WATER;
@@ -416,12 +397,12 @@
       document.getElementById('s4-ethanol').textContent = ethanolProduced.toFixed(0);
       document.getElementById('s4-total').textContent = s4Total.toFixed(0);
 
-      // S6: Distillate (ご指定の式による直計算)
+      // S6: Distillate
       // m_6E = 4 * R * X * (M_E / M_S) * m_1S
-      const s6Ethanol = 4 * ETHANOL_RECOVERY * CONVERSION_RATE * (MW_ETHANOL / MW_SUCROSE) * sucroseFeed;
+      const s6Ethanol = 4 * ethanolRecovery * conversionRate * (MW_ETHANOL / MW_SUCROSE) * sucroseFeed;
 
       // m_6W = 4 * ((1 - x_E) / x_E) * R * X * (M_E / M_S) * m_1S
-      const s6Water = 4 * ((1 - X_E) / X_E) * ETHANOL_RECOVERY * CONVERSION_RATE * (MW_ETHANOL / MW_SUCROSE) * sucroseFeed;
+      const s6Water = xE > 0 ? 4 * ((1 - xE) / xE) * ethanolRecovery * conversionRate * (MW_ETHANOL / MW_SUCROSE) * sucroseFeed : 0;
 
       const s6Total = s6Ethanol + s6Water;
 
@@ -431,7 +412,7 @@
 
       // S5: Bottoms (物質収支: m_5 = m_4 - m_6)
       const s5Sucrose = sucroseUnreacted;             // m_5S = m_4S
-      const s5Water = s4Water - s6Water;               // m_5W = m_4W - m_6W
+      const s5Water = s4Water - s6Water;                // m_5W = m_4W - m_6W
       const s5Ethanol = ethanolProduced - s6Ethanol;   // m_5E = m_4E - m_6E
       const s5Yeast = YEAST_FEED;
       const s5Total = s5Sucrose + s5Water + s5Ethanol + s5Yeast;
@@ -442,9 +423,14 @@
       document.getElementById('s5-total').textContent = s5Total.toFixed(0);
     }
 
-    inputSucrose.addEventListener('input', calculateProcess);
-    inputWater.addEventListener('input', calculateProcess);
+    // イベントリスナーの追加（入力中・値変更時にリアルタイム計算）
+    const inputs = [inputSucrose, inputWater, inputConversion, inputRecovery, inputFraction];
+    inputs.forEach(input => {
+      input.addEventListener('input', calculateProcess);
+      input.addEventListener('change', calculateProcess);
+    });
 
+    // 初期実行
     calculateProcess();
   </script>
 </body>
